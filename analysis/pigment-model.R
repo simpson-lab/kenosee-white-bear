@@ -23,6 +23,7 @@ ggplot(pigments, aes(mid.depth, conc)) +
 
 # modelling ####
 # by = pigment?
+m.twlss <- readRDS('models/kwb-twlss.rds')
 m.twlss <- gam(list(conc ~ s(year.scam, pigment_lake, k = 30, bs = 'fs'),
                     # constant mean-variance relationship
                     ~ 1,
@@ -34,6 +35,7 @@ m.twlss <- gam(list(conc ~ s(year.scam, pigment_lake, k = 30, bs = 'fs'),
                weights = weight,
                method = 'REML',
                control = gam.control(nthreads = NCORES))
+# saveRDS(m.twlss, 'models/kwb-twlss.rds')
 
 appraise(m.twlss)
 
