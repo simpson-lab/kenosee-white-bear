@@ -1,12 +1,10 @@
 library('mgcv')
 library('scam')
-library('ggplot2')
 library('readxl')
 library('tidyr')
-library('cowplot')
 library('dplyr')
 library('gratia')
-theme_set(theme_bw())
+source('analysis/default-figure-styling.R')
 YEAR.MAX <- lubridate::decimal_date(as.POSIXlt('2016-07-18')) # coring date
 
 # dating data (using midpoint depths)
@@ -26,7 +24,9 @@ dates <- bind_rows(read_xlsx(path = 'data/Kenosee2016-dates.xlsx',
   filter(!is.na(year)) %>%
   mutate(weight = 1 / correl.se,
          weight = weight / mean(weight),
-         lake = factor(lake))
+         lake = factor(lake),
+         lwr.1se = year - correl.se,
+         upr.1se = year + correl.se)
 
 # keep k low because SE is as big as Pb measurement in lower depths
 m.age <- scam(year ~ s(mid.depth, k = 5, bs = 'mpd', by = lake),
@@ -34,19 +34,26 @@ m.age <- scam(year ~ s(mid.depth, k = 5, bs = 'mpd', by = lake),
 
 new.ages <- expand_grid(mid.depth = seq(0, 40, length.out = 400),
                         lake = c('Kenosee', 'White~Bear'))
-new.ages$fitted <- predict(m.age, newdata = new.ages, type = 'response')
+new.ages <- bind_cols(new.ages,
+                      predict(m.age, newdata = new.ages, se.fit = TRUE)) %>%
+  mutate(lwr = fit - se.fit,
+         upr = fit + se.fit)
 
 # plot with age models
-ggplot() +
-  geom_point(aes(year, mid.depth, col = lake, shape = lake), dates) +
-  geom_line(aes(fitted, mid.depth, col = lake), new.ages) +
-  scale_color_manual('Lake', values = c('forestgreen', 'goldenrod'),
-                     labels = c('Kenosee', 'White Bear')) +
-  scale_shape_manual('Lake', values = c(19, 4),
-                     labels = c('Kenosee', 'White Bear')) +
+p.dating <-
+  ggplot() +
+  facet_grid(lake ~ ., labeller = label_parsed) +
+  geom_ribbon(aes(xmin = lwr, xmax = upr, y = mid.depth), new.ages,
+              alpha = 0.2) +
+  geom_line(aes(fit, mid.depth), new.ages) +
+  geom_point(aes(year, mid.depth), dates, color = 'red', size = 1) +
+  geom_errorbar(aes(xmin = lwr.1se, xmax = upr.1se, y = mid.depth), dates,
+                width = 0, color = 'red') +
   scale_y_reverse() +
-  labs(x = 'Year CE', y = 'Depth (cm)') +
-  theme(legend.position = 'top')
+  labs(x = 'Year CE', y = 'Depth (cm)',
+       title = '+/-1 SE bars and CIs, weights = 1/correlated.se, w/mean(w)')
+p.dating
+#p2pdf('dating-models.pdf', p = p.dating, scale = 2)
 
 # add dates and temporal weights to data ####
 pigments <-
