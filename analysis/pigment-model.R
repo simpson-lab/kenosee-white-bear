@@ -10,7 +10,20 @@ theme_set(theme_bw())
 NCORES <- 4 # number of logical processors/cores
 
 # import data
-pigments <- readRDS('data/kwb-data.rds')
+pigments <-
+  readRDS('data/kwb-data.rds') %>%
+  select(-Chl_Pheo_a, -Chl.Pheo, -UV_index) %>%
+  pivot_longer(names_to = 'pigment',
+               values_to = 'conc',
+               cols = -c('lake', 'mid.depth', 'weight', 'year.scam',
+                         'interval')) %>%
+  mutate(pigment = factor(pigment),
+         lake = factor(lake),
+         pigment_lake = interaction(pigment, lake, drop = TRUE))
+
+# check data
+unique(pigments$pigment)
+apply(pigments, 2, function(x) range(x, na.rm = TRUE)) %>% t()
 
 # pigment overview (different trends, different smoothness)
 ggplot(pigments, aes(mid.depth, conc)) +
@@ -37,8 +50,7 @@ m.twlss <- gam(list(conc ~ s(year.scam, pigment_lake, k = 30, bs = 'fs'),
                control = gam.control(nthreads = NCORES))
 # saveRDS(m.twlss, 'models/kwb-twlss.rds')
 
-appraise(m.twlss)
-
+appraise(m.twlss) # diagnostics ok
 summary(m.twlss)
 draw(m.twlss)
 

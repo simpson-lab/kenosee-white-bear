@@ -56,18 +56,18 @@ p.dating
 #p2pdf('dating-models.pdf', p = p.dating, scale = 2)
 
 # add dates and temporal weights to data ####
-pigments <-
+kwb <-
   read_xlsx('data/KWB-pigments.xlsx') %>%
-  select(Lake, Depth, Allo, `B-car`, Cantha, Diato, Echine, Lut_Zea, Myxo,
-         Okenone, Phaeo_B, Pheo_A) %>%
+  select(Lake, Depth, Myxo, Allo, Diato, Lut_Zea, Cantha, Okenone,
+         Echine, Phaeo_B, Pheo_A, `B-car`, Chl_Pheo_a, Chl.Pheo, UV_index) %>%
   rename(lake = Lake, mid.depth = Depth, `beta~car` = `B-car`, Canth = Cantha,
          Echin = Echine, `Lut~Zea` = Lut_Zea, Oken = Okenone, `Pheo~A` = Pheo_A,
          `Pheo~B` = Phaeo_B) %>%
   mutate(lake = if_else(lake == 'WB', 'White~Bear', lake))
-sum(is.na(pigments)) # check for NAs
-pigments <-
-  mutate(pigments,
-         year.scam = predict(m.age, pigments, type = 'response'),
+sum(is.na(kwb)) # check for NAs
+kwb <-
+  mutate(kwb,
+         year.scam = predict(m.age, kwb, type = 'response'),
          year.scam = if_else(year.scam > YEAR.MAX, YEAR.MAX, year.scam)) %>%
   group_by(lake) %>%
   mutate(interval = if_else(lake == lag(lake),
@@ -83,22 +83,11 @@ pigments <-
 # estimated weights are reasonable
 ggplot() +
   facet_grid(lake ~ ., scales = 'free_y', labeller = label_parsed) +
-  geom_point(aes(mid.depth, weight, color = mid.depth == 0), pigments) +
+  geom_point(aes(mid.depth, weight, color = mid.depth == 0), kwb) +
   theme(legend.position = 'top')
 
-# switch to long format
-pigments <-
-  pivot_longer(pigments,
-               names_to = 'pigment',
-               values_to = 'conc',
-               cols = -c('lake', 'mid.depth', 'weight', 'year.scam','interval')) %>%
-  mutate(pigment = factor(pigment),
-         lake = factor(lake),
-         pigment_lake = interaction(pigment, lake, drop = TRUE))
-
 # check data
-unique(pigments$pigment)
-apply(pigments, 2, function(x) range(x, na.rm = TRUE))
+apply(kwb, 2, function(x) range(x, na.rm = TRUE)) %>% t()
 
 # save tibble for use in other files
-#saveRDS(pigments, 'data/kwb-data.rds')
+#saveRDS(kwb, 'data/kwb-data.rds')
