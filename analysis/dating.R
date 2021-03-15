@@ -28,8 +28,8 @@ dates <- bind_rows(read_xlsx(path = 'data/Kenosee2016-dates.xlsx',
          lwr.1se = year - correl.se,
          upr.1se = year + correl.se)
 
-# keep k low because SE is as big as Pb measurement in lower depths
-m.age <- scam(year ~ s(mid.depth, k = 5, bs = 'mpd', by = lake),
+# age estimates are based on CRS model => high k; monotone decreasing p spline
+m.age <- scam(year ~ s(mid.depth, k = 9, bs = 'mpd', by = lake),
               data = dates, family = gaussian(), weights = weight)
 
 new.ages <- expand_grid(mid.depth = seq(0, 40, length.out = 400),
@@ -53,7 +53,7 @@ p.dating <-
   labs(x = 'Year CE', y = 'Depth (cm)',
        title = '+/-1 SE bars and CIs, weights = 1/correlated.se, w/mean(w)')
 p.dating
-#p2pdf('dating-models.pdf', p = p.dating, scale = 2)
+#p2pdf('dating-model.pdf', p = p.dating, scale = 2)
 
 # add dates and temporal weights to data ####
 kwb <-
@@ -65,6 +65,7 @@ kwb <-
          `Pheo~B` = Phaeo_B) %>%
   mutate(lake = if_else(lake == 'WB', 'White~Bear', lake))
 sum(is.na(kwb)) # check for NAs
+
 kwb <-
   mutate(kwb,
          year.scam = predict(m.age, kwb, type = 'response'),
@@ -72,18 +73,17 @@ kwb <-
   group_by(lake) %>%
   mutate(interval = if_else(lake == lag(lake),
                             true = lag(year.scam) - year.scam,
-                            false = NA_real_),
+                            false = NA_real_,
+                            missing = YEAR.MAX - year.scam),
          mean.interval = mean(interval, na.rm = TRUE),
-         min.interval = min(interval, na.rm = TRUE),
-         interval = if_else(is.na(interval), min.interval, interval),
          weight = interval / mean.interval) %>%
-  select(- mean.interval, - min.interval) %>%
+  select(- mean.interval) %>%
   ungroup()
 
-# estimated weights are reasonable
+# weights for top slice are reasonable
 ggplot() +
   facet_grid(lake ~ ., scales = 'free_y', labeller = label_parsed) +
-  geom_point(aes(mid.depth, weight, color = mid.depth == 0), kwb) +
+  geom_point(aes(mid.depth, interval, color = mid.depth == 0), kwb) +
   theme(legend.position = 'top')
 
 # check data
