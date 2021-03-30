@@ -144,12 +144,12 @@ p.triple <-
         legend.key.height = unit(0.275, 'in'),
         legend.spacing.x = unit(-1, 'in'))
 p.triple
-p2pdf('dating-model.pdf', p = p.triple, scale = 2.5)
+#p2pdf('dating-model.pdf', p = p.triple, scale = 2.5)
 
-# add dates and temporal weights to data ####
+# add dates and temporal weights to pigment data ####
 kwb <-
   read_xlsx('data/KWB-pigments.xlsx') %>%
-  select(Lake, Depth, Myxo, Allo, Diato, Lut_Zea, Cantha, Okenone,
+  select(Lake, Depth, Allo, Diato, Lut_Zea, Cantha, Okenone, Fuco,
          Echine, Phaeo_B, Pheo_A, `B-car`, Chl_Pheo_a, Chl.Pheo, UV_index) %>%
   rename(lake = Lake, mid.depth = Depth, `beta~car` = `B-car`, Canth = Cantha,
          Echin = Echine, `Lut~Zea` = Lut_Zea, Oken = Okenone, `Pheo~A` = Pheo_A,
@@ -182,3 +182,27 @@ apply(kwb, 2, function(x) range(x, na.rm = TRUE)) %>% t()
 
 # save tibble for use in other files
 #saveRDS(kwb, 'data/kwb-data.rds')
+
+# add dates to isotope data ####
+isotopes <-
+  read_xlsx('data/KenoseeWB2016-isotopes.xlsx') %>%
+  transmute(sample = Sample,
+            lake = case_when(grepl('K', sample) ~ 'Kenosee',
+                             grepl('WB', sample) ~ 'White~Bear'),
+            mid.depth = `Depth (cm)`,
+            mg = `Wt.[mg]`,
+            d15N = d15NAIR,
+            d13C = d13CVPDB,
+            #mgN = mgN,
+            #mgC = mgC,
+            #c.n.ratio = `C/N`,
+            percN =  `%N`,
+            percC = `%C`)
+
+isotopes <-
+  mutate(isotopes,
+         year.scam = predict(m.age, isotopes, type = 'response'),
+         year.scam = if_else(year.scam > YEAR.MAX, YEAR.MAX, year.scam))
+
+# save tibble for use in other files
+#saveRDS(isotopes, 'data/isotopes.rds')
