@@ -306,10 +306,9 @@ p.full <-
                       p.mu.wb + x.axis + y.axis,
                       p.s2.k + x.axis + y.axis + coord_cartesian(ylim=c(0, NA)),
                       p.s2.wb + x.axis + y.axis + coord_cartesian(ylim=c(0,NA)),
-                      rel_widths = c(1.13, 1, 1.17, 1.20),
+                      rel_widths = c(.89, .77, .95, .96),
                       nrow = 1),
             get_plot_component(p.mu.k, pattern = 'xlab-b'),
             nrow = 2,
             rel_heights = c(0.95, 0.05))
 #p2pdf('mean-variance-predictions.pdf', p.full, scale = 2.5, width = 3)
-
