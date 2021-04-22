@@ -19,7 +19,7 @@ d %>%
   ggplot() +
   facet_grid(name ~ lake, scales = 'free_y') +
   geom_point(aes(year.scam, value), alpha = 0.5) +
-  labs(x = 'Estimated year CE', y = NULL) +
+  labs(x = 'Year C.E.', y = NULL) +
   ylim(c(0, NA))
 
 # modeling ####
@@ -84,7 +84,7 @@ p <-
             lwd = 2, col = 'red') +
   geom_line(aes(year.scam, muhat), pred) +
   geom_point(aes(year.scam, value), alpha = 0.5) +
-  labs(x = 'Estimated year C.E.', y = NULL) +
+  labs(x = 'Year C.E.', y = NULL) +
   theme(strip.placement = 'outside')
 p
 

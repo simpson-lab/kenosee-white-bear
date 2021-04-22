@@ -121,7 +121,7 @@ p.triple <-
                  color = factor(name, levels = c('pb.210','cs.137')))) +
   
   # other
-  labs(x = 'Year C. E.', y = 'Depth (cm)') +
+  labs(x = 'Year C.E.', y = 'Depth (cm)') +
   scale_y_reverse(name = 'Depth (cm)',
                   breaks = seq(0, 35, by = 2.5),
                   labels = c(0, '', 5, '', 10, '', 15, '', 20, '',
@@ -195,7 +195,7 @@ isotopes <-
             d13C = d13CVPDB,
             #mgN = mgN,
             #mgC = mgC,
-            #c.n.ratio = `C/N`,
+            c.n.ratio = `C/N`,
             percN =  `%N`,
             percC = `%C`)
 
