@@ -3,7 +3,6 @@ library('scam')
 library('readxl')
 library('tidyr')
 library('dplyr')
-library('gratia')
 source('analysis/default-figure-styling.R')
 YEAR.MAX <- lubridate::decimal_date(as.POSIXlt('2016-07-18')) # coring date
 
@@ -139,12 +138,13 @@ p.triple <-
                                 1900, '', 1950, '', 2000)) +
   scale_shape_manual(NULL, values = c(19, 1)) +
   scale_color_brewer(NULL, type = 'qual', palette = 6) +
-  theme(legend.position = c(.3, 1.1),
+  theme(legend.position = c(.25, 1.065),
         legend.text = element_blank(),
-        legend.key.height = unit(0.275, 'in'),
+        legend.key.height = unit(0.3, 'in'),
         legend.spacing.x = unit(-1, 'in'))
 p.triple
-#p2pdf('dating-model.pdf', p = p.triple, scale = 2.5)
+p2pdf('dating-model.pdf', p = p.triple, scale = 2.5,
+      width = HEIGHT, height = WIDTH) # switch aspect ratio
 
 # add dates and temporal weights to pigment data ####
 kwb <-

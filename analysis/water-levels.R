@@ -1,12 +1,7 @@
-library('mgcv')
 library('ggplot2')
 library('readxl')
-library('tidyr')
-library('cowplot')
 library('dplyr')
-library('gratia')
 source('analysis/default-figure-styling.R')
-NCORES <- 4 # number of cores
 
 kenosee <-
   read_xlsx('data/KenoseeWB2016-max depths_ calc.xlsx',
@@ -29,7 +24,7 @@ wb <-
 kenosee$depth <- kenosee$depth - filter(kenosee, year == 1964)$depth
 wb$depth <- wb$depth - filter(wb, year == 1964)$depth
 
-p <- ggplot(water) +
+p <- ggplot() +
   geom_hline(yintercept = 0, color = 'grey80') +
   geom_line(aes(year, depth, color = lake), wb) +
   geom_line(aes(year, depth, color = lake), kenosee) +
@@ -38,4 +33,4 @@ p <- ggplot(water) +
   theme(legend.position = 'top')
 p
 
-p2pdf('lake-levels.pdf', p = p, width = 3, height = 4.5, scale = 1.5)
+p2pdf('lake-levels.pdf', p = p, width = 3, height = 4.5)
