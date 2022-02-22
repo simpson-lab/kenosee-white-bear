@@ -312,3 +312,14 @@ p.full <-
             nrow = 2,
             rel_heights = c(0.95, 0.05))
 #p2pdf('mean-variance-predictions.pdf', p.full, scale = 2.5, width = 3)
+
+# plot coefficient of variation
+mutate(pred, cv = sqrt(s2) / mu) %>%
+  ggplot() +
+  facet_grid(pigment ~ ., scales = 'free_y', labeller = label_parsed) +
+  geom_line(aes(year.scam, cv, color = lake), lwd = 1) +
+  scale_color_brewer('Lake', type = 'qual', palette = 1,
+                     labels = c('Kenosee', 'White Bear')) +
+  labs(x = 'Year C.E.', y = 'Coefficient of variation') +
+  theme(legend.position = 'top')
+ 
